@@ -1,0 +1,323 @@
+{
+  "file_path": "C:\\EspritProjects\\sys\\SYS\\parallel_processing_project\\demo_sample.bin",
+  "file_size_bytes": 5242880,
+  "chunk_size_kb": 512,
+  "methods": {
+    "sequential": {
+      "total_time": 0.010006189346313477,
+      "throughput_mb_per_sec": 499.6907241058877,
+      "chunks_processed": 10,
+      "num_workers": 1,
+      "file_sha256": "dc025f33f3cb10c676342f2ac68411682e89dfc7c5486b635345bee57c14e961",
+      "chunks": [
+        {
+          "chunk_id": 0,
+          "offset": 0,
+          "bytes_processed": 524288,
+          "chunk_sha256": "03abe3a76e514ce0a4375cb518031568feaff9a064b0a9bbe0a85aa82c8685a0",
+          "execution_time": 0.0005276203155517578
+        },
+        {
+          "chunk_id": 1,
+          "offset": 524288,
+          "bytes_processed": 524288,
+          "chunk_sha256": "10147155e205ab9ae71897639e9797cd76bf33a335e48458dfeea64fae024921",
+          "execution_time": 0.0005092620849609375
+        },
+        {
+          "chunk_id": 2,
+          "offset": 1048576,
+          "bytes_processed": 524288,
+          "chunk_sha256": "c273d1f16c12e33ba90d0b1833be6d0cf76ed37621303341f65103c6bf335780",
+          "execution_time": 0.0004246234893798828
+        },
+        {
+          "chunk_id": 3,
+          "offset": 1572864,
+          "bytes_processed": 524288,
+          "chunk_sha256": "99fe41a3f922007f3f69954d3472dc095206a2c22f6530f440a6395add0628b1",
+          "execution_time": 0.0003788471221923828
+        },
+        {
+          "chunk_id": 4,
+          "offset": 2097152,
+          "bytes_processed": 524288,
+          "chunk_sha256": "3c9cbe256b41262b06f8d2fd943361ad8ae5f1c915055f47fa92bc9db3184241",
+          "execution_time": 0.00041222572326660156
+        },
+        {
+          "chunk_id": 5,
+          "offset": 2621440,
+          "bytes_processed": 524288,
+          "chunk_sha256": "20fd83a980e1ec51f92210bea204f8addbb4a6d22aa559a7e89851a867f1370f",
+          "execution_time": 0.0003769397735595703
+        },
+        {
+          "chunk_id": 6,
+          "offset": 3145728,
+          "bytes_processed": 524288,
+          "chunk_sha256": "43bf0b87b9f169a0503ef142c204a986e945972468b86c9ff9ab30e13d37af7b",
+          "execution_time": 0.00040340423583984375
+        },
+        {
+          "chunk_id": 7,
+          "offset": 3670016,
+          "bytes_processed": 524288,
+          "chunk_sha256": "d4c4f1c2a270411bed0dce72d3060a3b301f5f0428f993e0ed5fb68e1b7aa35f",
+          "execution_time": 0.0003905296325683594
+        },
+        {
+          "chunk_id": 8,
+          "offset": 4194304,
+          "bytes_processed": 524288,
+          "chunk_sha256": "4c8699ddaf489f752d2001f3dace8b45f1e79bf3fa17b6c12a1f932d0a938242",
+          "execution_time": 0.00046706199645996094
+        },
+        {
+          "chunk_id": 9,
+          "offset": 4718592,
+          "bytes_processed": 524288,
+          "chunk_sha256": "c4b15dac31f2bdd49d3ca05f27ae81b1ae797635138a4e69b690a096165716e5",
+          "execution_time": 0.0004253387451171875
+        }
+      ]
+    },
+    "multiprocessing": {
+      "total_time": 0.8637716770172119,
+      "throughput_mb_per_sec": 5.788566739379633,
+      "chunks_processed": 10,
+      "num_workers": 2,
+      "file_sha256": "dc025f33f3cb10c676342f2ac68411682e89dfc7c5486b635345bee57c14e961",
+      "chunks": [
+        {
+          "chunk_id": 0,
+          "offset": 0,
+          "bytes_processed": 524288,
+          "chunk_sha256": "03abe3a76e514ce0a4375cb518031568feaff9a064b0a9bbe0a85aa82c8685a0",
+          "execution_time": 0.0006573200225830078
+        },
+        {
+          "chunk_id": 1,
+          "offset": 524288,
+          "bytes_processed": 524288,
+          "chunk_sha256": "10147155e205ab9ae71897639e9797cd76bf33a335e48458dfeea64fae024921",
+          "execution_time": 0.0004856586456298828
+        },
+        {
+          "chunk_id": 2,
+          "offset": 1048576,
+          "bytes_processed": 524288,
+          "chunk_sha256": "c273d1f16c12e33ba90d0b1833be6d0cf76ed37621303341f65103c6bf335780",
+          "execution_time": 0.0005593299865722656
+        },
+        {
+          "chunk_id": 3,
+          "offset": 1572864,
+          "bytes_processed": 524288,
+          "chunk_sha256": "99fe41a3f922007f3f69954d3472dc095206a2c22f6530f440a6395add0628b1",
+          "execution_time": 0.0004489421844482422
+        },
+        {
+          "chunk_id": 4,
+          "offset": 2097152,
+          "bytes_processed": 524288,
+          "chunk_sha256": "3c9cbe256b41262b06f8d2fd943361ad8ae5f1c915055f47fa92bc9db3184241",
+          "execution_time": 0.0006635189056396484
+        },
+        {
+          "chunk_id": 5,
+          "offset": 2621440,
+          "bytes_processed": 524288,
+          "chunk_sha256": "20fd83a980e1ec51f92210bea204f8addbb4a6d22aa559a7e89851a867f1370f",
+          "execution_time": 0.00046515464782714844
+        },
+        {
+          "chunk_id": 6,
+          "offset": 3145728,
+          "bytes_processed": 524288,
+          "chunk_sha256": "43bf0b87b9f169a0503ef142c204a986e945972468b86c9ff9ab30e13d37af7b",
+          "execution_time": 0.0005037784576416016
+        },
+        {
+          "chunk_id": 7,
+          "offset": 3670016,
+          "bytes_processed": 524288,
+          "chunk_sha256": "d4c4f1c2a270411bed0dce72d3060a3b301f5f0428f993e0ed5fb68e1b7aa35f",
+          "execution_time": 0.0004448890686035156
+        },
+        {
+          "chunk_id": 8,
+          "offset": 4194304,
+          "bytes_processed": 524288,
+          "chunk_sha256": "4c8699ddaf489f752d2001f3dace8b45f1e79bf3fa17b6c12a1f932d0a938242",
+          "execution_time": 0.0004334449768066406
+        },
+        {
+          "chunk_id": 9,
+          "offset": 4718592,
+          "bytes_processed": 524288,
+          "chunk_sha256": "c4b15dac31f2bdd49d3ca05f27ae81b1ae797635138a4e69b690a096165716e5",
+          "execution_time": 0.00039887428283691406
+        }
+      ]
+    },
+    "multithreading": {
+      "total_time": 0.011986494064331055,
+      "throughput_mb_per_sec": 417.13615116857284,
+      "chunks_processed": 10,
+      "num_workers": 2,
+      "file_sha256": "dc025f33f3cb10c676342f2ac68411682e89dfc7c5486b635345bee57c14e961",
+      "chunks": [
+        {
+          "chunk_id": 0,
+          "offset": 0,
+          "bytes_processed": 524288,
+          "chunk_sha256": "03abe3a76e514ce0a4375cb518031568feaff9a064b0a9bbe0a85aa82c8685a0",
+          "execution_time": 0.0009791851043701172
+        },
+        {
+          "chunk_id": 1,
+          "offset": 524288,
+          "bytes_processed": 524288,
+          "chunk_sha256": "10147155e205ab9ae71897639e9797cd76bf33a335e48458dfeea64fae024921",
+          "execution_time": 0.0007817745208740234
+        },
+        {
+          "chunk_id": 2,
+          "offset": 1048576,
+          "bytes_processed": 524288,
+          "chunk_sha256": "c273d1f16c12e33ba90d0b1833be6d0cf76ed37621303341f65103c6bf335780",
+          "execution_time": 0.0009250640869140625
+        },
+        {
+          "chunk_id": 3,
+          "offset": 1572864,
+          "bytes_processed": 524288,
+          "chunk_sha256": "99fe41a3f922007f3f69954d3472dc095206a2c22f6530f440a6395add0628b1",
+          "execution_time": 0.0009417533874511719
+        },
+        {
+          "chunk_id": 4,
+          "offset": 2097152,
+          "bytes_processed": 524288,
+          "chunk_sha256": "3c9cbe256b41262b06f8d2fd943361ad8ae5f1c915055f47fa92bc9db3184241",
+          "execution_time": 0.0010581016540527344
+        },
+        {
+          "chunk_id": 5,
+          "offset": 2621440,
+          "bytes_processed": 524288,
+          "chunk_sha256": "20fd83a980e1ec51f92210bea204f8addbb4a6d22aa559a7e89851a867f1370f",
+          "execution_time": 0.0009703636169433594
+        },
+        {
+          "chunk_id": 6,
+          "offset": 3145728,
+          "bytes_processed": 524288,
+          "chunk_sha256": "43bf0b87b9f169a0503ef142c204a986e945972468b86c9ff9ab30e13d37af7b",
+          "execution_time": 0.0014376640319824219
+        },
+        {
+          "chunk_id": 7,
+          "offset": 3670016,
+          "bytes_processed": 524288,
+          "chunk_sha256": "d4c4f1c2a270411bed0dce72d3060a3b301f5f0428f993e0ed5fb68e1b7aa35f",
+          "execution_time": 0.0013518333435058594
+        },
+        {
+          "chunk_id": 8,
+          "offset": 4194304,
+          "bytes_processed": 524288,
+          "chunk_sha256": "4c8699ddaf489f752d2001f3dace8b45f1e79bf3fa17b6c12a1f932d0a938242",
+          "execution_time": 0.0006949901580810547
+        },
+        {
+          "chunk_id": 9,
+          "offset": 4718592,
+          "bytes_processed": 524288,
+          "chunk_sha256": "c4b15dac31f2bdd49d3ca05f27ae81b1ae797635138a4e69b690a096165716e5",
+          "execution_time": 0.0006022453308105469
+        }
+      ]
+    },
+    "sleeping_barber": {
+      "total_time": 0.04777956008911133,
+      "throughput_mb_per_sec": 104.64725900939112,
+      "chunks_processed": 10,
+      "num_workers": 2,
+      "file_sha256": "dc025f33f3cb10c676342f2ac68411682e89dfc7c5486b635345bee57c14e961",
+      "chunks": [
+        {
+          "chunk_id": 0,
+          "offset": 0,
+          "bytes_processed": 524288,
+          "chunk_sha256": "03abe3a76e514ce0a4375cb518031568feaff9a064b0a9bbe0a85aa82c8685a0",
+          "execution_time": 0.0008242130279541016
+        },
+        {
+          "chunk_id": 1,
+          "offset": 524288,
+          "bytes_processed": 524288,
+          "chunk_sha256": "10147155e205ab9ae71897639e9797cd76bf33a335e48458dfeea64fae024921",
+          "execution_time": 0.0008623600006103516
+        },
+        {
+          "chunk_id": 2,
+          "offset": 1048576,
+          "bytes_processed": 524288,
+          "chunk_sha256": "c273d1f16c12e33ba90d0b1833be6d0cf76ed37621303341f65103c6bf335780",
+          "execution_time": 0.0009114742279052734
+        },
+        {
+          "chunk_id": 3,
+          "offset": 1572864,
+          "bytes_processed": 524288,
+          "chunk_sha256": "99fe41a3f922007f3f69954d3472dc095206a2c22f6530f440a6395add0628b1",
+          "execution_time": 0.0008480548858642578
+        },
+        {
+          "chunk_id": 4,
+          "offset": 2097152,
+          "bytes_processed": 524288,
+          "chunk_sha256": "3c9cbe256b41262b06f8d2fd943361ad8ae5f1c915055f47fa92bc9db3184241",
+          "execution_time": 0.0008683204650878906
+        },
+        {
+          "chunk_id": 5,
+          "offset": 2621440,
+          "bytes_processed": 524288,
+          "chunk_sha256": "20fd83a980e1ec51f92210bea204f8addbb4a6d22aa559a7e89851a867f1370f",
+          "execution_time": 0.0008120536804199219
+        },
+        {
+          "chunk_id": 6,
+          "offset": 3145728,
+          "bytes_processed": 524288,
+          "chunk_sha256": "43bf0b87b9f169a0503ef142c204a986e945972468b86c9ff9ab30e13d37af7b",
+          "execution_time": 0.0007827281951904297
+        },
+        {
+          "chunk_id": 7,
+          "offset": 3670016,
+          "bytes_processed": 524288,
+          "chunk_sha256": "d4c4f1c2a270411bed0dce72d3060a3b301f5f0428f993e0ed5fb68e1b7aa35f",
+          "execution_time": 0.0006928443908691406
+        },
+        {
+          "chunk_id": 8,
+          "offset": 4194304,
+          "bytes_processed": 524288,
+          "chunk_sha256": "4c8699ddaf489f752d2001f3dace8b45f1e79bf3fa17b6c12a1f932d0a938242",
+          "execution_time": 0.0009381771087646484
+        },
+        {
+          "chunk_id": 9,
+          "offset": 4718592,
+          "bytes_processed": 524288,
+          "chunk_sha256": "c4b15dac31f2bdd49d3ca05f27ae81b1ae797635138a4e69b690a096165716e5",
+          "execution_time": 0.0008704662322998047
+        }
+      ]
+    }
+  }
+}

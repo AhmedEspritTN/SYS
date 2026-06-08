@@ -1,82 +1,119 @@
-# Parallel Processing & Benchmarking Project
+# Parallel File Processing & Benchmarking Project
 
 ## Project Summary
 
-This is a comprehensive Python project demonstrating **intensive parallel processing, advanced synchronization, and real-world benchmarking** for the "Systèmes d'Exploitation Avancé" (Advanced Operating Systems) course.
+This Python project demonstrates **high-performance parallel file processing, inter-process communication, synchronization, and benchmarking** for the "Systèmes d'Exploitation Avancé" (Advanced Operating Systems) course.
 
-**Status:** ✅ Complete - All requirements implemented and tested
+**Application domain:** Large file processing (team choice)  
+**Status:** Complete — all requirements implemented and tested
 
 ---
 
 ## Quick Links
 
-- 🚀 **Get Started:** [INSTRUCTIONS.md](INSTRUCTIONS.md)
-- 📋 **Technical Specs:** [REQUIREMENTS.md](REQUIREMENTS.md)
-- ⚡ **Quick Demo:** `python quick_start.py`
-- 🔬 **Full Suite:** `python examples/run_all_examples.py`
+- **Project Idea:** [PROJECT_IDEA.md](PROJECT_IDEA.md)
+- **Presentation:** [presentation.pptx](presentation.pptx) (regenerate: `python create_presentation.py`)
+- **Demo Video:** [demo_video.mp4](demo_video.mp4) — live app in sandbox (`python create_demo_video.py`)
+- **Get Started:** [INSTRUCTIONS.md](INSTRUCTIONS.md)
+- **Technical Specs:** [REQUIREMENTS.md](REQUIREMENTS.md)
+- **Interactive Client:** `python client.py`
+- **Quick Demo:** `python quick_start.py`
+- **Full Suite:** `python examples/run_all_examples.py`
 
 ---
 
 ## What's Included
 
-### 1. **Interprocess Communication (IPC)** ✓
-- **Pipes**: One-to-one process communication
-- **Queues**: Multi-producer/consumer message passing
-- **Shared Memory**: Direct memory sharing with synchronization
+### 1. **Parallel File Processing** (main application)
+- Reads real files in configurable chunks
+- Computes SHA-256 checksums per chunk and for the full file
+- **Sequential**, **multiprocessing**, and **multithreading** execution modes
+- Configurable number of processes and threads
+- JSON benchmark reports (`processing_report.json`)
 
-### 2. **Synchronization Primitives** ✓
-- **Semaphores**: Resource counting and control
-- **Locks/Mutexes**: Critical section protection
-- **Condition Variables**: Wait-notify patterns
+### 2. **Interprocess Communication (IPC)**
+- **Pipes:** One-to-one process communication
+- **Queues:** Multi-producer/consumer message passing
+- **Shared Memory:** Direct memory sharing with synchronization
 
-### 3. **Classic Synchronization Problems** ✓
-- **Dining Philosophers**: Deadlock-free resource allocation
-- **Sleeping Barber**: Producer-consumer with constraints
-- **Producer-Consumer**: Bounded buffer synchronization
+### 3. **Synchronization Primitives**
+- **Semaphores:** Resource counting and control
+- **Locks/Mutexes:** Critical section protection
 
-### 4. **Configurable Parallel Processing** ✓
-- **Multiprocessing**: CPU-bound task parallelization
-- **Multithreading**: I/O-bound task concurrency
-- **Process/Thread count**: Fully configurable
+### 4. **Classic Synchronization Problems**
+- **Dining Philosophers:** Deadlock-free resource allocation
+- **Sleeping Barber:** Producer-consumer with constraints
+- **Producer-Consumer:** Bounded buffer synchronization
 
-### 5. **Real-World Applications** ✓
-- **Video Processing**: Parallel frame processing with benchmarking
-- **Large File Processing**: Chunk-based parallel I/O with throughput metrics
+### 5. **Software Solution Loading**
+- Dynamic import of external Python modules (`sample_solution.py`)
+- Pluggable file-processing implementations via `SoftwareSolutionLoader`
 
-### 6. **Benchmarking & Performance Analysis** ✓
-- Sequential vs parallel comparisons
+### 6. **Benchmarking & Performance Analysis**
+- Sequential vs multiprocessing vs multithreading comparisons
 - Speedup calculations
-- Throughput metrics (FPS, MB/s)
+- Throughput metrics (MB/s)
+- Checksum verification across all methods
+
+---
+
+## Functional Needs (Besoins Fonctionnels)
+
+| ID | Need | Implementation |
+|----|------|----------------|
+| BF-01 | User submits a file for processing | `client.py` interactive menu |
+| BF-02 | Configurable multiprocessing | `--num-processes` / menu option 2 |
+| BF-03 | Configurable multithreading | `--num-threads` / menu option 3 |
+| BF-04 | Limited waiting queue (Sleeping Barber) | `SleepingBarberFileProcessor` / menu option 1 |
+| BF-05 | Compare all modes + benchmarking | menu option 4 / `--mode benchmark` |
+| BF-06 | Load external software solution | menu option 5 / `--mode software` |
+| BF-07 | Export JSON processing report | `processing_report.json` |
+| BF-08 | File integrity check (SHA-256) | all processing modes |
+
+### Sleeping Barber mapping
+- **Customer** = file chunk waiting to be hashed
+- **Barber** = worker thread
+- **Chairs** = bounded waiting queue (`num_chairs`)
+- **Shop full** = chunk waits until a chair is free
 
 ---
 
 ## Quick Start
 
-### Minimal (30 seconds)
+### Interactive client (recommended for end users)
 ```bash
 cd parallel_processing_project
+python client.py
+```
+
+### Process a file from command line
+```bash
+python parallel_processing.py sample_input.bin --create-sample --sample-size-mb 20 --mode sleeping_barber
+```
+
+### Quick overview (30 seconds)
+```bash
 python quick_start.py
 ```
 
-### Full Demo (2-3 minutes)
+### Full suite (IPC + sync + file processing)
 ```bash
-cd parallel_processing_project
 python examples/run_all_examples.py
 ```
 
-### Individual Modules
+### Individual modules
 ```bash
-# IPC only
+# File processing CLI
+python parallel_processing.py sample_input.bin --mode benchmark
+
+# Alternative file processing entry point
+python examples/real_world_examples.py sample_input.bin --mode benchmark
+
+# IPC demonstrations
 python ipc_communication.py
 
-# Synchronization only
+# Synchronization demonstrations
 python synchronization.py
-
-# Parallel processing only
-python parallel_processing.py
-
-# Real-world examples only
-python examples/real_world_examples.py
 ```
 
 ---
@@ -86,123 +123,104 @@ python examples/real_world_examples.py
 ```
 parallel_processing_project/
 │
-├── 📄 README.md                    ← You are here
-├── 📋 INSTRUCTIONS.md              ← How to run everything
-├── 📋 REQUIREMENTS.md              ← Technical specification
+├── README.md                       ← You are here
+├── REQUIREMENTS.md                 ← Technical specification
+├── INSTRUCTIONS.md               ← How to run everything
 │
-├── 🐍 __init__.py                  ← Package initialization
-├── 🐍 quick_start.py               ← Quick 30-second demo
+├── client.py                       ← Interactive user application
+├── file_processing.py              ← Core file processing engine
+├── sleeping_barber_processor.py    ← Sleeping Barber + file processing
+├── parallel_processing.py          ← CLI + configurable processor
+├── sample_solution.py              ← External solution (loaded at runtime)
+├── sample_input.bin                ← Sample binary file for testing
+├── processing_report.json          ← Generated benchmark report
 │
-├── 🔧 Core Modules
-│   ├── ipc_communication.py        ← Pipes, Queues, Shared Memory
-│   ├── synchronization.py          ← Semaphores & Classic Problems
-│   └── parallel_processing.py      ← Multiprocessing & Multithreading
+├── ipc_communication.py            ← Pipes, Queues, Shared Memory
+├── synchronization.py              ← Semaphores & classic problems
+├── quick_start.py                  ← Quick demo
 │
-└── 📂 examples/
+└── examples/
     ├── run_all_examples.py         ← Master runner
-    └── real_world_examples.py      ← Video & File processing
+    └── real_world_examples.py      ← File processing CLI
 ```
 
 ---
 
 ## Key Features
 
-### ✅ Multiprocessing & Multithreading
-- **Configurable processes:** Default = CPU count, min = 1, max = unlimited
-- **Configurable threads:** Default = 4, adjustable per workload
-- **Benchmarking:** Compare performance across different configurations
+### File Processing
+- **Chunk-based I/O:** Configurable chunk size (default 1 MB)
+- **SHA-256 integrity:** Per-chunk and full-file checksums
+- **Three execution modes:** Sequential, multiprocessing, multithreading
+- **JSON reports:** Timing, throughput, and per-chunk results
 
-### ✅ IPC Techniques
+### Multiprocessing & Multithreading
+- **Configurable processes:** Default = CPU count
+- **Configurable threads:** Default = 4
+- **Benchmarking:** Compare all three modes on the same file
+
+### IPC Techniques
 - **Pipes:** Low-overhead 1-to-1 communication
 - **Queues:** Thread/process-safe multi-producer/consumer
 - **Shared Memory:** High-performance memory sharing with protection
 
-### ✅ Synchronization
-- **Semaphores:** Binary (locks) and counting (resource control)
-- **Atomic Operations:** Lock-protected shared data
-- **Context Managers:** Safe resource acquisition/release
-
-### ✅ Classic Problems Solved
-- **Dining Philosophers:** 5 philosophers, 5 forks, deadlock-free dining
-- **Sleeping Barber:** Limited waiting room, fairness guarantees
-- **Producer-Consumer:** Bounded buffer, no overflow/underflow
-
-### ✅ Performance Analysis
-- Sequential baseline measurements
-- Parallel execution timing
-- Speedup calculations (typically 2-4x on 4-core systems)
-- Real throughput metrics (FPS, MB/sec)
-
----
-
-## What You'll Learn
-
-### Concepts
-1. Process vs Thread (when to use each)
-2. Shared memory hazards and solutions
-3. Deadlock, starvation, and fairness
-4. Semaphore patterns and patterns
-5. Performance modeling and benchmarking
-
-### Practical Skills
-1. Using Python's `multiprocessing` module
-2. Implementing thread pools
-3. IPC communication patterns
-4. Synchronization primitives
-5. Performance profiling and optimization
-
-### Real-World Applications
-1. Video/Media processing pipelines
-2. Large file batch processing
-3. Network service management
-4. Task scheduling and load balancing
+### Synchronization
+- **Semaphores:** Binary and counting
+- **Classic problems:** Dining Philosophers, Sleeping Barber, Producer-Consumer
 
 ---
 
 ## Sample Output
 
-### Running Quick Start
+### File Processing Benchmark
 ```
 ============================================================
-QUICK START: Parallel Processing Concepts
+FILE PROCESSING BENCHMARK
 ============================================================
+File: sample_input.bin
+Size: 20.00 MB
+Chunk size: 512 KB
+Chunks: 40
+Processes: 4
+Threads: 4
 
-QUICK START: Interprocess Communication
-============================================================
-1. Pipe Communication (1-to-1)
-  Child received: 'Hello from parent!'
-  Parent got: 'Echo: Hello from parent!'
+Sequential:
+  Time: 0.05 s
+  Throughput: 367.30 MB/s
+  File SHA-256: aef406dbd745899858bb713fd5b137c50fb9dc9c85576b99a82af66989509bc5
 
-2. Queue Communication (Many-to-Many)
-  Producer 1: Created 'Item_1_0'
-  Consumer 1: Got 'Item_1_0'
+Multiprocessing:
+  Time: 0.21 s
+  Throughput: 94.96 MB/s
+  File SHA-256: aef406dbd745899858bb713fd5b137c50fb9dc9c85576b99a82af66989509bc5
+
+Multithreading:
+  Time: 0.03 s
+  Throughput: 597.00 MB/s
+  File SHA-256: aef406dbd745899858bb713fd5b137c50fb9dc9c85576b99a82af66989509bc5
+
+Checksums match across all methods: True
+Multiprocessing speedup: 0.26x
+Multithreading speedup: 1.63x
 ```
 
-### Running Full Suite
-```
-============================================================
-PART 1: INTERPROCESS COMMUNICATION (IPC)
-============================================================
-1.1 - Pipe Communication Demo
-✓ Pipes demonstration completed successfully
+---
 
-1.2 - Queue Communication Demo
-✓ Queues demonstration completed successfully
+## CLI Options
 
-... [continues through all modules] ...
+```bash
+python parallel_processing.py <file_path> [options]
 
-============================================================
-PROJECT SUMMARY
-============================================================
-
-KEY CONCEPTS DEMONSTRATED:
-✓ Interprocess Communication (IPC)
-✓ Synchronization
-✓ Classic Problems Solved
-✓ Parallel Processing
-✓ Real-World Applications
-
-Project Completed Successfully!
+Options:
+  --mode {sequential,multiprocessing,multithreading,sleeping_barber,benchmark,software}
+  --num-chairs N             # Waiting chairs for Sleeping Barber (default: 8)
+  --num-processes N          # Worker processes (default: CPU count)
+  --num-threads N            # Worker threads (default: 4)
+  --chunk-size-kb N          # Chunk size in KB (default: 1024)
+  --create-sample            # Create sample file if missing
+  --sample-size-mb N         # Sample file size (default: 10)
+  --output-report PATH       # Save JSON benchmark report
+  --solution-path PATH       # External solution module (software mode)
 ```
 
 ---
@@ -211,178 +229,76 @@ Project Completed Successfully!
 
 - **Python:** 3.8 or higher
 - **OS:** Windows, Linux, macOS
-- **Dependencies:** None! (Standard library only)
+- **Dependencies:** None (standard library only)
 - **Cores:** 2+ recommended for meaningful benchmarks
-
----
-
-## Performance Expectations
-
-### CPU-Bound (Fibonacci)
-- Sequential: ~2.5 seconds (4 tasks)
-- Multiprocessing (4 cores): ~0.9 seconds
-- **Speedup: 2.7x**
-
-### I/O-Bound (Simulated)
-- Sequential: ~1.6 seconds (8 tasks × 0.2s)
-- Multithreading (4 threads): ~0.5 seconds
-- **Speedup: 3.2x**
-
-### Video Processing (100 frames)
-- Sequential: ~1.2 seconds
-- Parallel (4 workers): ~0.35 seconds
-- **Speedup: 3.4x**
-
-### File Processing (50 MB)
-- Sequential: 1.05 seconds @ 47.6 MB/s
-- Parallel (4 workers): 0.31 seconds @ 161.3 MB/s
-- **Speedup: 3.4x**
-
-*Note: Actual speedups depend on your CPU, system load, and Python version*
-
----
-
-## Troubleshooting
-
-### "RuntimeError: An attempt has been made to start a new process"
-✅ **Solution:** Scripts wrap multiprocessing in `if __name__ == "__main__":`
-
-### Program hangs (deadlock)
-✅ **Solution:** All synchronization uses `with lock:` context managers
-
-### Slow parallel code
-✅ **Solution:** Workload too small. Each task should take 10ms+
-
-### High memory usage
-✅ **Solution:** Reduce `num_processes`. Each process is ~10-50 MB
-
-See [INSTRUCTIONS.md](INSTRUCTIONS.md) for more troubleshooting tips.
 
 ---
 
 ## Files Overview
 
-| File | Purpose | Lines | Status |
-|------|---------|-------|--------|
-| `ipc_communication.py` | Pipes, Queues, Shared Memory | 280 | ✅ |
-| `synchronization.py` | Semaphores & Classic Problems | 320 | ✅ |
-| `parallel_processing.py` | Multiprocessing & Multithreading | 250 | ✅ |
-| `examples/real_world_examples.py` | Video & File Processing | 280 | ✅ |
-| `examples/run_all_examples.py` | Master Example Runner | 180 | ✅ |
-| `quick_start.py` | Quick 30-second Demo | 200 | ✅ |
-| `INSTRUCTIONS.md` | How to Run Guide | 600+ | ✅ |
-| `REQUIREMENTS.md` | Technical Specification | 400+ | ✅ |
-
-**Total:** ~2500+ lines of code + comprehensive documentation
+| File | Purpose | Status |
+|------|---------|--------|
+| `file_processing.py` | Core engine: chunk I/O, SHA-256, benchmarking | Done |
+| `parallel_processing.py` | CLI, config, software loader | Done |
+| `ipc_communication.py` | Pipes, Queues, Shared Memory | Done |
+| `synchronization.py` | Semaphores & classic problems | Done |
+| `examples/real_world_examples.py` | File processing CLI | Done |
+| `examples/run_all_examples.py` | Master example runner | Done |
+| `sample_solution.py` | External pluggable solution | Done |
+| `quick_start.py` | Quick demo | Done |
+| `REQUIREMENTS.md` | Technical specification | Done |
 
 ---
 
 ## Course Requirements Coverage
 
 | Requirement | Implementation | Status |
-|-------------|-----------------|--------|
-| Multiprocessing | `ConfigurableParallelProcessor` | ✅ |
-| Multithreading | Thread pools + lock-free patterns | ✅ |
-| Configurable processes | `ProcessingConfig.num_processes` | ✅ |
-| Configurable threads | `ProcessingConfig.num_threads` | ✅ |
-| Pipes IPC | `PipeCommunication` | ✅ |
-| Queues IPC | `QueueCommunication` | ✅ |
-| Shared Memory IPC | `SharedMemoryData` | ✅ |
-| Semaphores | All synchronization classes | ✅ |
-| Dining Philosophers | `DiningPhilosophers` class | ✅ |
-| Sleeping Barber | `SleepingBarber` class | ✅ |
-| English Comments | All source files | ✅ |
-| Runnable Examples | 5 different example scripts | ✅ |
-| Benchmarking | Performance analysis included | ✅ |
-
-**All Requirements Met:** ✅
-
----
-
-## How to Extend
-
-### Add New IPC Type
-```python
-# In ipc_communication.py
-class MyIPCMethod:
-    def __init__(self):
-        pass
-    
-    def send(self, data):
-        pass
-    
-    def receive(self):
-        pass
-```
-
-### Add New Synchronization Problem
-```python
-# In synchronization.py
-class MyProblem:
-    def __init__(self):
-        self.semaphores = [...]
-    
-    def solve(self):
-        pass
-```
-
-### Add New Real-World Example
-```python
-# In examples/real_world_examples.py
-class MyApplication:
-    def process(self):
-        pass
-```
+|-------------|----------------|--------|
+| Application domain (file processing) | `ParallelFileProcessor` | Done |
+| Multiprocessing | `process_with_multiprocessing()` | Done |
+| Multithreading | `process_with_multithreading()` | Done |
+| Configurable processes | `ProcessingConfig.num_processes` | Done |
+| Configurable threads | `ProcessingConfig.num_threads` | Done |
+| Software solution loading | `SoftwareSolutionLoader` | Done |
+| Pipes IPC | `PipeCommunication` | Done |
+| Queues IPC | `QueueCommunication` | Done |
+| Shared Memory IPC | `SharedMemoryData` | Done |
+| Semaphores | Synchronization classes | Done |
+| Dining Philosophers | `DiningPhilosophers` | Done |
+| Sleeping Barber (demo) | `SleepingBarber` in `synchronization.py` | Done |
+| Sleeping Barber (file processing) | `SleepingBarberFileProcessor` | Done |
+| User client application | `client.py` | Done |
+| Benchmarking | `benchmark()` + JSON reports | Done |
+| English comments | All source files | Done |
 
 ---
 
-## Next Steps
+## Deliverables
 
-1. **Learn:** Read [INSTRUCTIONS.md](INSTRUCTIONS.md) for detailed explanations
-2. **Try:** Run `python quick_start.py` to see concepts in 30 seconds
-3. **Explore:** Read individual module docstrings
-4. **Benchmark:** Run `python examples/run_all_examples.py` for full analysis
-5. **Extend:** Modify parameters in `ProcessingConfig` to experiment
+| Deliverable | Location |
+|-------------|----------|
+| Source code | This repository |
+| Technical specifications | [REQUIREMENTS.md](REQUIREMENTS.md) |
+| Demo video | To be recorded by the team |
+| Presentation | To be prepared by the team |
 
 ---
 
 ## References
 
-### Python Documentation
-- [multiprocessing](https://docs.python.org/3/library/multiprocessing.html)
-- [threading](https://docs.python.org/3/library/threading.html)
-- [os module](https://docs.python.org/3/library/os.html)
-
-### Course Concepts
-- Process communication patterns
-- Synchronization primitives (Dijkstra)
-- Resource allocation problems
-- Operating system concepts
+- [Python multiprocessing](https://docs.python.org/3/library/multiprocessing.html)
+- [Python threading](https://docs.python.org/3/library/threading.html)
+- [Python hashlib](https://docs.python.org/3/library/hashlib.html)
 
 ---
 
 ## License
 
-MIT License - Free to use for educational purposes
+MIT License — free to use for educational purposes
 
 ---
 
-## Author
-
-Created for: **Systèmes d'Exploitation Avancé (Advanced Operating Systems)**  
-Date: 2026  
-Status: ✅ Complete & Production Ready
-
----
-
-## Support
-
-For issues or questions:
-1. Check [INSTRUCTIONS.md](INSTRUCTIONS.md) - How to Run
-2. Check [REQUIREMENTS.md](REQUIREMENTS.md) - Technical Details
-3. Review docstrings in source files
-4. Run with `python -v` for verbose output
-
----
-
-**Ready to run! Execute: `python examples/run_all_examples.py`**
+**Ready to run:**
+```bash
+python parallel_processing.py sample_input.bin --create-sample --mode benchmark
+```

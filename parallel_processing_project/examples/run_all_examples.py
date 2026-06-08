@@ -17,14 +17,15 @@ from synchronization import (
     demonstrate_sleeping_barber,
     demonstrate_producer_consumer
 )
+from file_processing import create_sample_file
 from parallel_processing import (
     ProcessingConfig,
     demonstrate_multiprocessing,
     demonstrate_multithreading,
+    demonstrate_sleeping_barber,
     demonstrate_benchmarking,
-    demonstrate_software_loading
+    demonstrate_software_loading,
 )
-from examples.real_world_examples import FileProcessor, create_sample_file
 
 
 def print_header(title: str):
@@ -109,44 +110,63 @@ def run_all_examples():
     # =========================================================================
     # PART 3: MULTIPROCESSING & MULTITHREADING
     # =========================================================================
-    print_header("PART 3: CONFIGURABLE PARALLEL PROCESSING")
-    print("Demonstrates: Multiprocessing, Multithreading, Benchmarking\n")
+    print_header("PART 3: PARALLEL FILE PROCESSING")
+    print("Processes real files with multiprocessing and multithreading\n")
+
+    sample_file = Path("sample_input.bin")
+    create_sample_file(sample_file, size_mb=10)
+    file_config = ProcessingConfig(
+        num_processes=4,
+        num_threads=4,
+        chunk_size_kb=1024,
+        file_path=str(sample_file),
+    )
     
     try:
-        print("3.1 - Multiprocessing Demo (CPU-bound tasks)")
+        print("3.1 - Multiprocessing File Processing")
         print("-" * 70)
-        demonstrate_multiprocessing()
-        print("\n✓ Multiprocessing demonstration completed successfully\n")
+        demonstrate_multiprocessing(file_config)
+        print("\n✓ Multiprocessing file processing completed successfully\n")
         time.sleep(1)
     except Exception as e:
-        print(f"✗ Multiprocessing demo failed: {e}\n")
+        print(f"✗ Multiprocessing file processing failed: {e}\n")
     
     try:
-        print("3.2 - Multithreading Demo (I/O-bound tasks)")
+        print("3.2 - Multithreading File Processing")
         print("-" * 70)
-        demonstrate_multithreading()
-        print("\n✓ Multithreading demonstration completed successfully\n")
+        demonstrate_multithreading(file_config)
+        print("\n✓ Multithreading file processing completed successfully\n")
         time.sleep(1)
     except Exception as e:
-        print(f"✗ Multithreading demo failed: {e}\n")
+        print(f"✗ Multithreading file processing failed: {e}\n")
     
     try:
-        print("3.3 - Benchmarking Demo (Sequential vs Parallel)")
+        print("3.3 - Sleeping Barber File Processing")
         print("-" * 70)
-        demonstrate_benchmarking(ProcessingConfig(
-            num_processes=4,
+        demonstrate_sleeping_barber(file_config, num_chairs=8)
+        print("\n✓ Sleeping Barber file processing completed successfully\n")
+        time.sleep(1)
+    except Exception as e:
+        print(f"✗ Sleeping Barber file processing failed: {e}\n")
+
+    try:
+        print("3.4 - File Processing Benchmark")
+        print("-" * 70)
+        demonstrate_benchmarking(file_config)
+        print("\n✓ File processing benchmark completed successfully\n")
+        time.sleep(1)
+    except Exception as e:
+        print(f"✗ File processing benchmark failed: {e}\n")
+    
+    try:
+        print("3.5 - Software Loading Demo")
+        print("-" * 70)
+        demonstrate_software_loading(
+            "sample_solution.py",
+            file_path=str(sample_file),
+            chunk_size_kb=1024,
             num_threads=4,
-            workload_size=100
-        ), num_tasks=4)
-        print("\n✓ Benchmarking demonstration completed successfully\n")
-        time.sleep(1)
-    except Exception as e:
-        print(f"✗ Benchmarking demo failed: {e}\n")
-    
-    try:
-        print("3.4 - Software Loading Demo")
-        print("-" * 70)
-        demonstrate_software_loading("sample_solution.py", num_tasks=4, workload_size=100)
+        )
         print("\n✓ Software loading demonstration completed successfully\n")
         time.sleep(1)
     except Exception as e:
@@ -155,21 +175,27 @@ def run_all_examples():
     # =========================================================================
     # PART 4: REAL-WORLD EXAMPLES
     # =========================================================================
-    print_header("PART 4: REAL-WORLD PARALLEL PROCESSING")
-    print("Demonstrates: Real file processing\n")
+    print_header("PART 4: FILE PROCESSING REPORT")
+    print("Writes a JSON report from the full benchmark\n")
     
     try:
-        print("4.1 - Real File Processing Example")
+        print("4.1 - Save Processing Report")
         print("-" * 70)
-        from multiprocessing import cpu_count
-        sample_file = Path("sample_input.bin")
-        create_sample_file(sample_file, size_mb=10)
-        file_proc = FileProcessor(file_path=sample_file, chunk_size_kb=1024, num_workers=cpu_count())
-        file_proc.benchmark()
-        print("\n✓ Real file processing example completed successfully\n")
+        from file_processing import ParallelFileProcessor
+
+        report_file = Path("processing_report.json")
+        processor = ParallelFileProcessor(
+            file_path=sample_file,
+            chunk_size_kb=1024,
+            num_processes=4,
+            num_threads=4,
+        )
+        results = processor.benchmark()
+        processor.save_report(report_file, results)
+        print("\n✓ Processing report saved successfully\n")
         time.sleep(1)
     except Exception as e:
-        print(f"✗ Real file processing demo failed: {e}\n")
+        print(f"✗ Processing report failed: {e}\n")
     
     # =========================================================================
     # SUMMARY
@@ -199,9 +225,9 @@ KEY CONCEPTS DEMONSTRATED:
    ✓ Benchmarking: Measuring performance improvements
 
 5. REAL-WORLD APPLICATIONS
-   ✓ Video/Media Processing: Parallel frame processing
-   ✓ File Processing: Chunk-based parallel I/O
-   ✓ Configurable parallelism: Adapt to hardware capabilities
+   ✓ File Processing: Chunk-based parallel I/O with SHA-256
+   ✓ Multiprocessing and multithreading on real files
+   ✓ JSON processing reports for verification
 
 PERFORMANCE INSIGHTS:
    - Multiprocessing: Best for CPU-intensive work (GIL bypass)
@@ -214,7 +240,7 @@ PROJECT STRUCTURE:
    ├── synchronization.py         (Semaphores, Classic Problems)
    ├── parallel_processing.py     (Multiprocessing/Threading)
    └── examples/
-       └── real_world_examples.py (Video, File Processing)
+       └── real_world_examples.py (File Processing CLI)
 """)
     
     print("="*70)

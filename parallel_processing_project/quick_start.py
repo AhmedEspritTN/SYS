@@ -118,38 +118,47 @@ def quick_start_synchronization():
 
 
 def quick_start_parallel():
-    """Quick parallel processing demonstration"""
+    """Quick parallel file processing demonstration"""
     print("\n" + "="*60)
-    print("QUICK START: Parallel Processing")
+    print("QUICK START: Parallel File Processing")
     print("="*60)
-    
-    from multiprocessing import Pool, cpu_count
-    
-    def fibonacci(n):
-        """Compute Fibonacci number (CPU-bound)"""
-        if n <= 1:
-            return n
-        return fibonacci(n-1) + fibonacci(n-2)
-    
-    # Single process
-    print("\n1. Sequential Processing")
+
+    from file_processing import ParallelFileProcessor, create_sample_file
+
+    sample_file = Path(__file__).parent / "sample_input.bin"
+    create_sample_file(sample_file, size_mb=2)
+
+    processor = ParallelFileProcessor(
+        file_path=sample_file,
+        chunk_size_kb=512,
+        num_processes=2,
+        num_threads=2,
+    )
+
+    print("\n1. Sequential File Processing")
     print("-" * 40)
-    start = time.time()
-    results = [fibonacci(30) for _ in range(3)]
-    seq_time = time.time() - start
-    print(f"  Results: {results}")
-    print(f"  Time: {seq_time:.2f} seconds")
-    
-    # Multiple processes
-    print("\n2. Parallel Processing (Multiprocessing)")
+    seq_result = processor.process_sequential()
+    print(f"  Chunks: {seq_result.chunks_processed}")
+    print(f"  Time: {seq_result.total_time:.2f} seconds")
+    print(f"  SHA-256: {seq_result.file_sha256[:16]}...")
+
+    print("\n2. Multiprocessing File Processing")
     print("-" * 40)
-    start = time.time()
-    with Pool(processes=cpu_count()) as pool:
-        results = pool.map(fibonacci, [30] * 3)
-    par_time = time.time() - start
-    print(f"  Results: {results}")
-    print(f"  Time: {par_time:.2f} seconds")
-    print(f"  Speedup: {seq_time/par_time:.2f}x")
+    mp_result = processor.process_with_multiprocessing()
+    print(f"  Chunks: {mp_result.chunks_processed}")
+    print(f"  Time: {mp_result.total_time:.2f} seconds")
+    print(f"  SHA-256: {mp_result.file_sha256[:16]}...")
+
+    print("\n3. Multithreading File Processing")
+    print("-" * 40)
+    mt_result = processor.process_with_multithreading()
+    print(f"  Chunks: {mt_result.chunks_processed}")
+    print(f"  Time: {mt_result.total_time:.2f} seconds")
+    print(f"  SHA-256: {mt_result.file_sha256[:16]}...")
+
+    if seq_result.total_time > 0:
+        print(f"\n  Multiprocessing speedup: {seq_result.total_time / mp_result.total_time:.2f}x")
+        print(f"  Multithreading speedup: {seq_result.total_time / mt_result.total_time:.2f}x")
 
 
 def quick_start_classic_problem():
