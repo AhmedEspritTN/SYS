@@ -394,9 +394,9 @@ sample_size_mb = 10           # --sample-size-mb
 - [x] Source code
 - [x] Technical specification (this document)
 - [x] Project idea description (`PROJECT_IDEA.md`)
-- [x] Presentation (`presentation.pptx`)
 - [ ] Git link (team submission)
 - [ ] Demo video (team submission)
+- [ ] Presentation (team submission)
 
 ---
 

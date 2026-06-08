@@ -91,8 +91,8 @@ This models a realistic server with **limited worker capacity** — not unlimite
 | IPC: pipes, queues, shared memory | Done |
 | Synchronization: semaphores + classic problems | Done |
 | Source code + technical specifications | Done |
-| Demo video | `demo_video.mp4` — run `python create_demo_video.py` |
-| Presentation | `presentation.pptx` |
+| Demo video | Team deliverable |
+| Presentation | Team deliverable |
 
 ---
 
@@ -101,7 +101,7 @@ This models a realistic server with **limited worker capacity** — not unlimite
 ```bash
 cd parallel_processing_project
 
-# Interactive client (recommended for demo video)
+# Interactive client
 python client.py
 
 # Sleeping Barber mode from CLI

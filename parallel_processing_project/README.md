@@ -12,8 +12,6 @@ This Python project demonstrates **high-performance parallel file processing, in
 ## Quick Links
 
 - **Project Idea:** [PROJECT_IDEA.md](PROJECT_IDEA.md)
-- **Presentation:** [presentation.pptx](presentation.pptx) (regenerate: `python create_presentation.py`)
-- **Demo Video:** [demo_video.mp4](demo_video.mp4) — live app in sandbox (`python create_demo_video.py`)
 - **Get Started:** [INSTRUCTIONS.md](INSTRUCTIONS.md)
 - **Technical Specs:** [REQUIREMENTS.md](REQUIREMENTS.md)
 - **Interactive Client:** `python client.py`
