@@ -1,296 +1,210 @@
 """
-Video Processing Example
-Demonstrates parallel processing for real-world video file processing.
-Uses multiprocessing to process video frames in parallel.
+Real File Processing Example
+Demonstrates real file processing with multiprocessing.
+Reads a real file in chunks and computes SHA-256 checksums per chunk.
+This example benchmarks sequential vs parallel file processing using an actual file.
 """
 
-import time
+import argparse
+import hashlib
+import math
 import os
+import time
 from dataclasses import dataclass
 from multiprocessing import Pool, cpu_count
-import threading
+from pathlib import Path
 
 
 @dataclass
-class ProcessingMetrics:
-    """Metrics for processing results"""
-    frames_processed: int
+class FileProcessingMetrics:
+    """Metrics for real file processing."""
+    file_path: str
+    file_size_mb: float
+    chunks_processed: int
     total_time: float
-    frames_per_second: float
-    processing_time_per_frame: float
+    throughput_mb_per_sec: float
+    checksum: str
 
 
-class VideoProcessor:
-    """
-    Simulates video file processing with parallel frame processing.
-    In real scenario, this would decode video and process each frame.
-    """
-    
-    def __init__(self, num_workers: int = None):
-        """
-        Initialize video processor.
-        
-        Args:
-            num_workers: Number of worker processes
-        """
-        self.num_workers = num_workers or cpu_count()
-    
-    @staticmethod
-    def process_frame(frame_data):
-        """
-        Process a single video frame.
-        In real scenario: edge detection, object tracking, etc.
-        
-        Args:
-            frame_data: Tuple of (frame_id, dummy_frame_size)
-            
-        Returns:
-            Processing result
-        """
-        frame_id, frame_size = frame_data
-        
-        # Simulate frame processing
-        # In real scenario: apply filters, detect objects, etc.
-        time.sleep(0.01)  # Simulate processing time
-        
-        # Simulate processing result
-        return {
-            'frame_id': frame_id,
-            'detected_objects': frame_id % 5,  # Simulate object detection
-            'processing_complete': True
-        }
-    
-    def process_video_sequential(self, num_frames: int) -> ProcessingMetrics:
-        """
-        Process video frames sequentially (baseline).
-        
-        Args:
-            num_frames: Number of frames to process
-            
-        Returns:
-            Processing metrics
-        """
-        start_time = time.time()
-        
-        results = []
-        for frame_id in range(num_frames):
-            result = self.process_frame((frame_id, 1024))
-            results.append(result)
-        
-        total_time = time.time() - start_time
-        fps = num_frames / total_time
-        per_frame = total_time / num_frames
-        
-        return ProcessingMetrics(
-            frames_processed=num_frames,
-            total_time=total_time,
-            frames_per_second=fps,
-            processing_time_per_frame=per_frame
-        )
-    
-    def process_video_parallel(self, num_frames: int) -> ProcessingMetrics:
-        """
-        Process video frames in parallel using multiprocessing.
-        
-        Args:
-            num_frames: Number of frames to process
-            
-        Returns:
-            Processing metrics
-        """
-        start_time = time.time()
-        
-        # Create frame data
-        frames = [(i, 1024) for i in range(num_frames)]
-        
-        # Process frames in parallel
-        with Pool(processes=self.num_workers) as pool:
-            results = pool.map(self.process_frame, frames)
-        
-        total_time = time.time() - start_time
-        fps = num_frames / total_time
-        per_frame = total_time / num_frames
-        
-        return ProcessingMetrics(
-            frames_processed=num_frames,
-            total_time=total_time,
-            frames_per_second=fps,
-            processing_time_per_frame=per_frame
-        )
-    
-    def benchmark(self, num_frames: int = 100):
-        """
-        Benchmark sequential vs parallel processing.
-        
-        Args:
-            num_frames: Number of frames to process
-        """
-        print("\n" + "="*60)
-        print("VIDEO PROCESSING EXAMPLE")
-        print("="*60)
-        print(f"Processing {num_frames} video frames\n")
-        
-        # Sequential processing
-        print("Sequential processing (1 worker):")
-        seq_metrics = self.process_video_sequential(num_frames)
-        print(f"  Total time: {seq_metrics.total_time:.2f} seconds")
-        print(f"  FPS: {seq_metrics.frames_per_second:.2f} frames/sec")
-        print(f"  Per-frame: {seq_metrics.processing_time_per_frame*1000:.2f} ms")
-        
-        # Parallel processing
-        print(f"\nParallel processing ({self.num_workers} workers):")
-        par_metrics = self.process_video_parallel(num_frames)
-        print(f"  Total time: {par_metrics.total_time:.2f} seconds")
-        print(f"  FPS: {par_metrics.frames_per_second:.2f} frames/sec")
-        print(f"  Per-frame: {par_metrics.processing_time_per_frame*1000:.2f} ms")
-        
-        # Speedup
-        speedup = seq_metrics.total_time / par_metrics.total_time
-        print(f"\nSpeedup: {speedup:.2f}x faster with {self.num_workers} workers")
+class FileProcessor:
+    """Processes a real file by reading it in chunks."""
 
-
-class LargeFileProcessor:
-    """
-    Processes large files by splitting into chunks.
-    Each chunk is processed by a worker thread/process.
-    """
-    
-    def __init__(self, chunk_size_kb: int = 1024, num_workers: int = 4):
-        """
-        Initialize file processor.
-        
-        Args:
-            chunk_size_kb: Size of each chunk in KB
-            num_workers: Number of worker threads
-        """
+    def __init__(self, file_path: Path, chunk_size_kb: int = 1024, num_workers: int = None):
+        self.file_path = Path(file_path)
         self.chunk_size_kb = chunk_size_kb
-        self.num_workers = num_workers
-    
+        self.chunk_size_bytes = chunk_size_kb * 1024
+        self.num_workers = num_workers or cpu_count()
+
+        if not self.file_path.exists():
+            raise FileNotFoundError(f"File not found: {self.file_path}")
+        if not self.file_path.is_file():
+            raise ValueError(f"Path must be a regular file: {self.file_path}")
+
+        self.file_size_bytes = self.file_path.stat().st_size
+        self.chunks = math.ceil(self.file_size_bytes / self.chunk_size_bytes)
+
     @staticmethod
-    def process_chunk(chunk_data):
-        """
-        Process a file chunk.
-        
-        Args:
-            chunk_data: Tuple of (chunk_id, chunk_size_bytes)
-            
-        Returns:
-            Chunk processing result
-        """
-        chunk_id, chunk_size = chunk_data
-        
-        # Simulate processing: checksum, compression, analysis, etc.
-        time.sleep(0.02)
-        
-        # Calculate simple checksum (simulation)
-        checksum = (chunk_id * 31) % 256
-        
+    def process_chunk(args):
+        """Read a file chunk and compute its SHA-256 checksum."""
+        file_path, offset, size = args
+        with open(file_path, "rb") as handle:
+            handle.seek(offset)
+            data = handle.read(size)
+
+        checksum = hashlib.sha256(data).hexdigest()
         return {
-            'chunk_id': chunk_id,
-            'bytes_processed': chunk_size,
-            'checksum': checksum
+            'chunk_id': offset // size,
+            'bytes_processed': len(data),
+            'chunk_sha256': checksum
         }
-    
-    def process_file_sequential(self, total_size_mb: int) -> dict:
-        """
-        Process file sequentially.
-        
-        Args:
-            total_size_mb: Total file size in MB
-            
-        Returns:
-            Processing result
-        """
+
+    def process_file_sequential(self) -> FileProcessingMetrics:
+        """Read the file sequentially and compute a full file checksum."""
         start_time = time.time()
-        
-        total_bytes = total_size_mb * 1024 * 1024
-        chunk_size_bytes = self.chunk_size_kb * 1024
-        num_chunks = total_bytes // chunk_size_bytes
-        
-        results = []
-        for chunk_id in range(num_chunks):
-            result = self.process_chunk((chunk_id, chunk_size_bytes))
-            results.append(result)
-        
+        sha256 = hashlib.sha256()
+        chunks_processed = 0
+
+        with open(self.file_path, "rb") as handle:
+            while True:
+                data = handle.read(self.chunk_size_bytes)
+                if not data:
+                    break
+                sha256.update(data)
+                chunks_processed += 1
+
         total_time = time.time() - start_time
-        
-        return {
-            'method': 'sequential',
-            'total_time': total_time,
-            'file_size_mb': total_size_mb,
-            'chunks_processed': num_chunks,
-            'throughput_mb_per_sec': total_size_mb / total_time
-        }
-    
-    def process_file_parallel(self, total_size_mb: int) -> dict:
-        """
-        Process file in parallel.
-        
-        Args:
-            total_size_mb: Total file size in MB
-            
-        Returns:
-            Processing result
-        """
+        throughput = (self.file_size_bytes / (1024 * 1024)) / total_time if total_time > 0 else float('inf')
+
+        return FileProcessingMetrics(
+            file_path=str(self.file_path),
+            file_size_mb=self.file_size_bytes / (1024 * 1024),
+            chunks_processed=chunks_processed,
+            total_time=total_time,
+            throughput_mb_per_sec=throughput,
+            checksum=sha256.hexdigest()
+        )
+
+    def process_file_parallel(self) -> dict:
+        """Read the file in parallel by checking each chunk in a worker process."""
         start_time = time.time()
-        
-        total_bytes = total_size_mb * 1024 * 1024
-        chunk_size_bytes = self.chunk_size_kb * 1024
-        num_chunks = total_bytes // chunk_size_bytes
-        
-        # Create chunk data
-        chunks = [(i, chunk_size_bytes) for i in range(num_chunks)]
-        
-        # Process chunks in parallel
+        offsets = []
+
+        for offset in range(0, self.file_size_bytes, self.chunk_size_bytes):
+            size = min(self.chunk_size_bytes, self.file_size_bytes - offset)
+            offsets.append((str(self.file_path), offset, size))
+
         with Pool(processes=self.num_workers) as pool:
-            results = pool.map(self.process_chunk, chunks)
-        
+            chunk_results = pool.map(self.process_chunk, offsets)
+
         total_time = time.time() - start_time
-        
+        throughput = (self.file_size_bytes / (1024 * 1024)) / total_time if total_time > 0 else float('inf')
+
         return {
             'method': 'parallel',
+            'file_path': str(self.file_path),
+            'file_size_mb': self.file_size_bytes / (1024 * 1024),
+            'chunks_processed': len(chunk_results),
             'total_time': total_time,
-            'file_size_mb': total_size_mb,
-            'chunks_processed': num_chunks,
-            'throughput_mb_per_sec': total_size_mb / total_time
+            'throughput_mb_per_sec': throughput,
+            'chunk_results': chunk_results
         }
-    
-    def benchmark(self, total_size_mb: int = 100):
-        """
-        Benchmark file processing.
-        
-        Args:
-            total_size_mb: Total file size in MB
-        """
-        print("\n" + "="*60)
-        print("LARGE FILE PROCESSING EXAMPLE")
-        print("="*60)
-        print(f"Processing {total_size_mb} MB file\n")
-        
-        # Sequential
+
+    def benchmark(self):
+        """Run sequential and parallel benchmarks for the file."""
+        print("\n" + "=" * 60)
+        print("REAL FILE PROCESSING EXAMPLE")
+        print("=" * 60)
+        print(f"Processing file: {self.file_path}")
+        print(f"File size: {self.file_size_bytes / (1024 * 1024):.2f} MB")
+        print(f"Chunk size: {self.chunk_size_kb} KB")
+        print(f"Workers: {self.num_workers}\n")
+
+        seq_metrics = self.process_file_sequential()
         print("Sequential processing:")
-        seq_result = self.process_file_sequential(total_size_mb)
-        print(f"  Time: {seq_result['total_time']:.2f} seconds")
-        print(f"  Throughput: {seq_result['throughput_mb_per_sec']:.2f} MB/s")
-        print(f"  Chunks: {seq_result['chunks_processed']}")
-        
-        # Parallel
-        print(f"\nParallel processing ({self.num_workers} workers):")
-        par_result = self.process_file_parallel(total_size_mb)
+        print(f"  Time: {seq_metrics.total_time:.2f} seconds")
+        print(f"  Throughput: {seq_metrics.throughput_mb_per_sec:.2f} MB/s")
+        print(f"  Chunks: {seq_metrics.chunks_processed}")
+        print(f"  SHA-256: {seq_metrics.checksum}\n")
+
+        par_result = self.process_file_parallel()
+        print("Parallel processing:")
         print(f"  Time: {par_result['total_time']:.2f} seconds")
         print(f"  Throughput: {par_result['throughput_mb_per_sec']:.2f} MB/s")
         print(f"  Chunks: {par_result['chunks_processed']}")
-        
-        # Speedup
-        speedup = seq_result['total_time'] / par_result['total_time']
+
+        example_chunks = par_result['chunk_results'][:3]
+        print("  Example chunk checksums:")
+        for chunk in example_chunks:
+            print(f"    chunk {chunk['chunk_id']}: {chunk['chunk_sha256']}")
+
+        speedup = seq_metrics.total_time / par_result['total_time'] if par_result['total_time'] > 0 else float('inf')
         print(f"\nSpeedup: {speedup:.2f}x faster")
 
 
+def create_sample_file(file_path: Path, size_mb: int = 10):
+    """Create a sample binary file if it does not exist."""
+    if file_path.exists():
+        return
+
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    total_bytes = size_mb * 1024 * 1024
+    chunk = 64 * 1024
+
+    with open(file_path, "wb") as handle:
+        written = 0
+        while written < total_bytes:
+            block_size = min(chunk, total_bytes - written)
+            handle.write(os.urandom(block_size))
+            written += block_size
+
+    print(f"Created sample file '{file_path}' ({size_mb} MB)")
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Real file processing benchmark")
+    parser.add_argument(
+        "file_path",
+        nargs="?",
+        default="sample_input.bin",
+        help="Path to the file to process"
+    )
+    parser.add_argument(
+        "--chunk-size-kb",
+        type=int,
+        default=1024,
+        help="Chunk size in KB"
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        help="Number of worker processes for parallel processing"
+    )
+    parser.add_argument(
+        "--create-sample",
+        action="store_true",
+        help="Create a sample file if the target file does not exist"
+    )
+    return parser.parse_args()
+
+
+def main():
+    args = parse_arguments()
+    file_path = Path(args.file_path)
+
+    if args.create_sample and not file_path.exists():
+        create_sample_file(file_path)
+
+    if not file_path.exists():
+        raise FileNotFoundError(f"The target file does not exist: {file_path}")
+
+    processor = FileProcessor(
+        file_path=file_path,
+        chunk_size_kb=args.chunk_size_kb,
+        num_workers=args.workers
+    )
+    processor.benchmark()
+
+
 if __name__ == "__main__":
-    # Run video processing example
-    video_processor = VideoProcessor(num_workers=cpu_count())
-    video_processor.benchmark(num_frames=100)
-    
-    # Run file processing example
-    file_processor = LargeFileProcessor(chunk_size_kb=1024, num_workers=cpu_count())
-    file_processor.benchmark(total_size_mb=50)
+    main()

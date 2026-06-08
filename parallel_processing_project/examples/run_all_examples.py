@@ -18,11 +18,13 @@ from synchronization import (
     demonstrate_producer_consumer
 )
 from parallel_processing import (
+    ProcessingConfig,
     demonstrate_multiprocessing,
     demonstrate_multithreading,
-    demonstrate_benchmarking
+    demonstrate_benchmarking,
+    demonstrate_software_loading
 )
-from examples.real_world_examples import VideoProcessor, LargeFileProcessor
+from examples.real_world_examples import FileProcessor, create_sample_file
 
 
 def print_header(title: str):
@@ -131,39 +133,43 @@ def run_all_examples():
     try:
         print("3.3 - Benchmarking Demo (Sequential vs Parallel)")
         print("-" * 70)
-        demonstrate_benchmarking()
+        demonstrate_benchmarking(ProcessingConfig(
+            num_processes=4,
+            num_threads=4,
+            workload_size=100
+        ), num_tasks=4)
         print("\n✓ Benchmarking demonstration completed successfully\n")
         time.sleep(1)
     except Exception as e:
         print(f"✗ Benchmarking demo failed: {e}\n")
     
+    try:
+        print("3.4 - Software Loading Demo")
+        print("-" * 70)
+        demonstrate_software_loading("sample_solution.py", num_tasks=4, workload_size=100)
+        print("\n✓ Software loading demonstration completed successfully\n")
+        time.sleep(1)
+    except Exception as e:
+        print(f"✗ Software loading demo failed: {e}\n")
+    
     # =========================================================================
     # PART 4: REAL-WORLD EXAMPLES
     # =========================================================================
     print_header("PART 4: REAL-WORLD PARALLEL PROCESSING")
-    print("Demonstrates: Video processing, Large file processing\n")
+    print("Demonstrates: Real file processing\n")
     
     try:
-        print("4.1 - Video Processing Example")
+        print("4.1 - Real File Processing Example")
         print("-" * 70)
         from multiprocessing import cpu_count
-        video_proc = VideoProcessor(num_workers=cpu_count())
-        video_proc.benchmark(num_frames=80)
-        print("\n✓ Video processing example completed successfully\n")
+        sample_file = Path("sample_input.bin")
+        create_sample_file(sample_file, size_mb=10)
+        file_proc = FileProcessor(file_path=sample_file, chunk_size_kb=1024, num_workers=cpu_count())
+        file_proc.benchmark()
+        print("\n✓ Real file processing example completed successfully\n")
         time.sleep(1)
     except Exception as e:
-        print(f"✗ Video processing demo failed: {e}\n")
-    
-    try:
-        print("4.2 - Large File Processing Example")
-        print("-" * 70)
-        from multiprocessing import cpu_count
-        file_proc = LargeFileProcessor(chunk_size_kb=1024, num_workers=cpu_count())
-        file_proc.benchmark(total_size_mb=50)
-        print("\n✓ File processing example completed successfully\n")
-        time.sleep(1)
-    except Exception as e:
-        print(f"✗ File processing demo failed: {e}\n")
+        print(f"✗ Real file processing demo failed: {e}\n")
     
     # =========================================================================
     # SUMMARY
