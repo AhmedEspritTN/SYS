@@ -17,6 +17,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
 
+from ipc_communication import PipeParallelPool
+
 
 @dataclass
 class ChunkResult:
@@ -85,6 +87,21 @@ def create_sample_file(file_path: Path, size_mb: int = 10) -> None:
             written += current_block
 
     print(f"Created sample file '{file_path}' ({size_mb} MB)")
+
+
+def _pipe_chunk_worker(conn, worker_id: int) -> None:
+    """
+    Worker process for pipe-based multiprocessing.
+
+    Receives chunk tasks from the parent through a pipe, hashes each chunk,
+    and sends ChunkResult back through the same pipe.
+    """
+    while True:
+        task = conn.recv()
+        if task is None:
+            break
+        conn.send(process_chunk(task))
+    conn.close()
 
 
 class ParallelFileProcessor:
@@ -196,12 +213,15 @@ class ParallelFileProcessor:
         )
 
     def process_with_multiprocessing(self) -> FileProcessingResult:
-        """Process file chunks in parallel using multiple processes."""
+        """Process file chunks in parallel using multiple processes and pipe IPC."""
         start_time = time.time()
         tasks = self._chunk_tasks()
 
-        with mp.Pool(processes=self.num_processes) as pool:
-            chunk_results = pool.map(process_chunk, tasks)
+        pipe_pool = PipeParallelPool(
+            num_processes=self.num_processes,
+            worker_target=_pipe_chunk_worker,
+        )
+        chunk_results = pipe_pool.map(tasks)
 
         file_sha256 = self._compute_file_sha256(self.file_path)
         total_time = time.time() - start_time

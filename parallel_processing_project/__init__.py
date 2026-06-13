@@ -13,6 +13,7 @@ try:
         PipeCommunication,
         QueueCommunication,
         SharedMemoryData,
+        PipeParallelPool,
     )
     from .synchronization import (
         DiningPhilosophers,
@@ -36,6 +37,7 @@ __all__ = [
     "PipeCommunication",
     "QueueCommunication",
     "SharedMemoryData",
+    "PipeParallelPool",
     "DiningPhilosophers",
     "SleepingBarber",
     "ProducerConsumerSemaphore",

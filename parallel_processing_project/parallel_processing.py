@@ -192,6 +192,7 @@ def demonstrate_multiprocessing(
     print(f"CPU count: {mp.cpu_count()}")
     print(f"File: {config.file_path}")
     print(f"Processes: {config.num_processes}")
+    print(f"IPC: pipes (parent sends chunks, workers return hashes)")
     print(f"Chunk size: {config.chunk_size_kb} KB\n")
 
     result = processor.process_with_multiprocessing()
@@ -227,9 +228,9 @@ def demonstrate_sleeping_barber(
     num_chairs: int = 8,
     output_report: Optional[str] = None,
 ):
-    """Run file processing with the Sleeping Barber algorithm."""
+    """Run file processing with Sleeping Barber and Dining Philosophers."""
     print("\n" + "=" * 60)
-    print("SLEEPING BARBER FILE PROCESSING")
+    print("SLEEPING BARBER + DINING PHILOSOPHERS FILE PROCESSING")
     print("=" * 60)
 
     processor = SleepingBarberFileProcessor(
@@ -239,7 +240,8 @@ def demonstrate_sleeping_barber(
         num_chairs=num_chairs,
     )
     print(f"File: {config.file_path}")
-    print(f"Barbers (threads): {config.num_threads}")
+    print(f"Barbers (philosophers): {config.num_threads}")
+    print(f"Forks: {config.num_threads}")
     print(f"Waiting chairs: {num_chairs}")
     print(f"Chunk size: {config.chunk_size_kb} KB\n")
 
@@ -268,7 +270,14 @@ def demonstrate_benchmarking(
     )
     barber_result = barber.process_with_sleeping_barber()
     results["sleeping_barber"] = barber_result
+    print("Sleeping Barber (+ Dining Philosophers):")
     _print_result_summary(barber_result)
+
+    checksums_match = all(
+        result.file_sha256 == results["sequential"].file_sha256
+        for result in results.values()
+    )
+    print(f"Checksums match across all methods: {checksums_match}")
 
     if output_report:
         processor.save_report(Path(output_report), results)

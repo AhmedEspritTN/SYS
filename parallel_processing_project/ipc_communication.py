@@ -6,7 +6,7 @@ Demonstrates: Pipes, Queues, and Shared Memory Segments
 import multiprocessing as mp
 from multiprocessing import Process, Pipe, Queue
 import time
-from typing import Any, Callable
+from typing import Any, Callable, List
 
 
 class PipeCommunication:
@@ -48,6 +48,76 @@ class PipeCommunication:
             conn.send(result)
         
         conn.close()
+
+
+class PipeParallelPool:
+    """
+    Distribute tasks to worker processes using pipe IPC.
+
+    The parent process sends tasks through a dedicated pipe to each worker.
+    Workers process tasks and send results back through the same pipe.
+    Used by multiprocessing file processing in file_processing.py.
+    """
+
+    def __init__(
+        self,
+        num_processes: int,
+        worker_target: Callable,
+    ):
+        self.num_processes = max(1, num_processes)
+        self.worker_target = worker_target
+
+    def map(self, tasks: List[Any]) -> List[Any]:
+        """Send tasks to workers via pipes and collect results."""
+        if not tasks:
+            return []
+
+        num_workers = min(self.num_processes, len(tasks))
+        parent_connections = []
+        processes = []
+
+        for worker_id in range(num_workers):
+            parent_conn, child_conn = Pipe(duplex=True)
+            parent_connections.append(parent_conn)
+            process = Process(
+                target=self.worker_target,
+                args=(child_conn, worker_id),
+            )
+            process.start()
+            child_conn.close()
+            processes.append(process)
+
+        results: List[Any] = []
+        pending_tasks = list(tasks)
+        in_flight = 0
+
+        for worker_id in range(num_workers):
+            if pending_tasks:
+                parent_connections[worker_id].send(pending_tasks.pop(0))
+                in_flight += 1
+
+        while in_flight > 0:
+            for worker_id in range(num_workers):
+                conn = parent_connections[worker_id]
+                if not conn.poll(timeout=0.01):
+                    continue
+
+                result = conn.recv()
+                results.append(result)
+                in_flight -= 1
+
+                if pending_tasks:
+                    conn.send(pending_tasks.pop(0))
+                    in_flight += 1
+
+        for conn in parent_connections:
+            conn.send(None)
+            conn.close()
+
+        for process in processes:
+            process.join(timeout=10)
+
+        return results
 
 
 class QueueCommunication:

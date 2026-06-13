@@ -19,7 +19,10 @@ from sleeping_barber_processor import SleepingBarberFileProcessor
 
 def ask_int(prompt: str, default: int, minimum: int = 1) -> int:
     """Read an integer from the user with a default value."""
-    value = input(f"{prompt} [{default}]: ").strip()
+    try:
+        value = input(f"{prompt} [{default}]: ").strip()
+    except KeyboardInterrupt:
+        raise
     if not value:
         return default
     try:
@@ -62,10 +65,10 @@ def print_result(result) -> None:
 
 def process_sleeping_barber(file_path: Path) -> None:
     """
-    Besoin fonctionnel BF-03:
-    Process a file with a limited waiting queue (Sleeping Barber).
+    Besoin fonctionnel BF-04:
+    Process a file with Sleeping Barber queueing and Dining Philosophers forks.
     """
-    num_barbers = ask_int("Number of barbers (threads)", default=4)
+    num_barbers = ask_int("Number of barbers (philosophers)", default=4)
     num_chairs = ask_int("Number of waiting chairs", default=8)
 
     processor = SleepingBarberFileProcessor(
@@ -80,7 +83,7 @@ def process_sleeping_barber(file_path: Path) -> None:
 
 def process_multiprocessing(file_path: Path) -> None:
     """
-    Besoin fonctionnel BF-01:
+    Besoin fonctionnel BF-02:
     Process a file using multiple processes (configurable).
     """
     config = ProcessingConfig(
@@ -96,7 +99,7 @@ def process_multiprocessing(file_path: Path) -> None:
 
 def process_multithreading(file_path: Path) -> None:
     """
-    Besoin fonctionnel BF-02:
+    Besoin fonctionnel BF-03:
     Process a file using multiple threads (configurable).
     """
     config = ProcessingConfig(
@@ -112,11 +115,12 @@ def process_multithreading(file_path: Path) -> None:
 
 def benchmark_all(file_path: Path) -> None:
     """
-    Besoin fonctionnel BF-04:
+    Besoin fonctionnel BF-05:
     Compare sequential, multiprocessing, multithreading, and Sleeping Barber.
     """
     num_processes = ask_int("Number of processes", default=mp.cpu_count())
     num_threads = ask_int("Number of threads / barbers", default=4)
+    num_chairs = ask_int("Number of waiting chairs (Sleeping Barber)", default=8)
     chunk_size_kb = ask_int("Chunk size in KB", default=1024)
 
     base = ParallelFileProcessor(
@@ -138,12 +142,12 @@ def benchmark_all(file_path: Path) -> None:
     multithreading_result = base.process_with_multithreading()
     print_result(multithreading_result)
 
-    print("Running Sleeping Barber...")
+    print("Running Sleeping Barber (+ Dining Philosophers)...")
     barber = SleepingBarberFileProcessor(
         file_path=file_path,
         chunk_size_kb=chunk_size_kb,
         num_barbers=num_threads,
-        num_chairs=8,
+        num_chairs=num_chairs,
         show_progress=False,
     )
     barber_result = barber.process_with_sleeping_barber()
@@ -160,9 +164,14 @@ def benchmark_all(file_path: Path) -> None:
     if sequential.total_time > 0:
         print(f"Multiprocessing speedup: {sequential.total_time / multiprocessing_result.total_time:.2f}x")
         print(f"Multithreading speedup:  {sequential.total_time / multithreading_result.total_time:.2f}x")
-        print(f"Sleeping Barber speedup:   {sequential.total_time / barber_result.total_time:.2f}x")
+        print(f"Sleeping Barber speedup: {sequential.total_time / barber_result.total_time:.2f}x")
 
-    save = input("Save JSON report? (y/n) [y]: ").strip().lower()
+    try:
+        save = input("Save JSON report? (y/n) [y]: ").strip().lower()
+    except KeyboardInterrupt:
+        print("\nReport not saved.")
+        return
+
     if save in ("", "y", "yes"):
         base.save_report(
             Path("processing_report.json"),
@@ -177,7 +186,7 @@ def benchmark_all(file_path: Path) -> None:
 
 def load_external_solution(file_path: Path) -> None:
     """
-    Besoin fonctionnel BF-05:
+    Besoin fonctionnel BF-06:
     Load and run an external Python processing solution.
     """
     solution_path = input("Solution file [sample_solution.py]: ").strip() or "sample_solution.py"
@@ -204,7 +213,7 @@ def show_menu() -> None:
     print("\n" + "=" * 50)
     print("  PARALLEL FILE PROCESSING - CLIENT")
     print("=" * 50)
-    print("  1. Process file (Sleeping Barber)")
+    print("  1. Process file (Sleeping Barber + Dining Philosophers)")
     print("  2. Process file (Multiprocessing)")
     print("  3. Process file (Multithreading)")
     print("  4. Benchmark all modes")
@@ -218,31 +227,40 @@ def main() -> None:
     print("Welcome to the Parallel File Processing Client")
     print("Application: large file checksum processing")
 
-    while True:
-        show_menu()
-        choice = input("Your choice [1-6]: ").strip()
+    try:
+        while True:
+            show_menu()
+            try:
+                choice = input("Your choice [1-6]: ").strip()
+            except KeyboardInterrupt:
+                print("\nGoodbye.")
+                break
 
-        if choice == "6":
-            print("Goodbye.")
-            break
+            if choice == "6":
+                print("Goodbye.")
+                break
 
-        try:
-            file_path = ask_file_path()
+            try:
+                file_path = ask_file_path()
 
-            if choice == "1":
-                process_sleeping_barber(file_path)
-            elif choice == "2":
-                process_multiprocessing(file_path)
-            elif choice == "3":
-                process_multithreading(file_path)
-            elif choice == "4":
-                benchmark_all(file_path)
-            elif choice == "5":
-                load_external_solution(file_path)
-            else:
-                print("Invalid choice. Please enter 1 to 6.")
-        except Exception as error:
-            print(f"Error: {error}")
+                if choice == "1":
+                    process_sleeping_barber(file_path)
+                elif choice == "2":
+                    process_multiprocessing(file_path)
+                elif choice == "3":
+                    process_multithreading(file_path)
+                elif choice == "4":
+                    benchmark_all(file_path)
+                elif choice == "5":
+                    load_external_solution(file_path)
+                else:
+                    print("Invalid choice. Please enter 1 to 6.")
+            except KeyboardInterrupt:
+                print("\nOperation cancelled.")
+            except Exception as error:
+                print(f"Error: {error}")
+    except KeyboardInterrupt:
+        print("\nGoodbye.")
 
 
 if __name__ == "__main__":

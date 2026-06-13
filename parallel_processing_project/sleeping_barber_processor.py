@@ -1,14 +1,22 @@
 """
-Sleeping Barber algorithm applied to file processing.
+Sleeping Barber + Dining Philosophers applied to file processing.
 
-Mapping (besoins fonctionnels):
-  Customer  -> file chunk that needs hashing
-  Barber    -> worker thread
-  Chairs    -> limited waiting room (bounded queue)
-  Shop full -> chunk must wait before entering the queue
+Combined mapping:
+  Sleeping Barber:
+    Customer  -> file chunk that needs hashing
+    Barber    -> worker thread (also a philosopher at the table)
+    Chairs    -> limited waiting room (bounded queue)
+    Shop full -> chunk must wait before entering the queue
 
-When no chunks are waiting, barber threads sleep on a semaphore.
-When a chunk arrives, it signals the barber to wake up and work.
+  Dining Philosophers:
+    Fork      -> shared resource semaphore (one per seat at the table)
+    Eat       -> hash a chunk (barber must hold left + right fork first)
+
+Flow:
+  1. Chunks arrive and wait in the bounded queue (Sleeping Barber)
+  2. A sleeping barber wakes when a customer arrives
+  3. Before hashing, the barber acquires both adjacent forks (Dining Philosophers)
+  4. Barber processes the chunk, releases forks, and sleeps again
 """
 
 import queue
@@ -26,7 +34,7 @@ from file_processing import (
 
 
 class SleepingBarberFileProcessor(ParallelFileProcessor):
-    """Process file chunks using the Sleeping Barber synchronization pattern."""
+    """Process file chunks using Sleeping Barber with Dining Philosophers fork control."""
 
     def __init__(
         self,
@@ -45,34 +53,59 @@ class SleepingBarberFileProcessor(ParallelFileProcessor):
         self.num_chairs = num_chairs
         self.show_progress = show_progress
 
+    @staticmethod
+    def _acquire_forks(
+        barber_id: int,
+        num_barbers: int,
+        forks: List[threading.Semaphore],
+    ) -> None:
+        """Acquire both forks in index order to avoid deadlock."""
+        left_fork = barber_id
+        right_fork = (barber_id + 1) % num_barbers
+        first_fork, second_fork = (
+            (left_fork, right_fork) if left_fork < right_fork else (right_fork, left_fork)
+        )
+        forks[first_fork].acquire()
+        forks[second_fork].acquire()
+
+    @staticmethod
+    def _release_forks(
+        barber_id: int,
+        num_barbers: int,
+        forks: List[threading.Semaphore],
+    ) -> None:
+        """Release both forks after hashing a chunk."""
+        left_fork = barber_id
+        right_fork = (barber_id + 1) % num_barbers
+        forks[left_fork].release()
+        forks[right_fork].release()
+
     def process_with_sleeping_barber(self) -> FileProcessingResult:
         """
-        Process the file chunk by chunk with Sleeping Barber synchronization.
+        Process the file using Sleeping Barber queueing and Dining Philosophers forks.
 
         Steps:
           1. Split file into chunks (customers)
-          2. Each chunk tries to sit in the waiting room (chairs)
-          3. Barber threads wake up and hash each chunk
-          4. Compute the full-file SHA-256 at the end
+          2. Each chunk waits in the bounded waiting room (chairs)
+          3. Barber threads wake up when customers arrive
+          4. Barber acquires left + right fork, hashes the chunk, releases forks
+          5. Compute the full-file SHA-256 at the end
         """
         start_time = time.time()
         tasks = self._chunk_tasks()
         total_chunks = len(tasks)
 
-        # Waiting room: bounded queue = limited chairs in the barber shop
         waiting_room: queue.Queue = queue.Queue(maxsize=self.num_chairs)
-
-        # Semaphore: signals barbers that a new customer (chunk) arrived
         customers_waiting = threading.Semaphore(0)
+        forks = [threading.Semaphore(1) for _ in range(self.num_barbers)]
 
         results: List[ChunkResult] = []
         results_lock = threading.Lock()
         stop_event = threading.Event()
 
         def barber_worker(barber_id: int) -> None:
-            """Barber sleeps until a chunk arrives, then processes it."""
+            """Barber sleeps until a chunk arrives, then eats (hashes) with both forks."""
             while True:
-                # Sleep here when no customers are waiting
                 if not customers_waiting.acquire(timeout=0.2):
                     if stop_event.is_set() and waiting_room.empty():
                         return
@@ -88,12 +121,24 @@ class SleepingBarberFileProcessor(ParallelFileProcessor):
                     return
 
                 if self.show_progress:
-                    print(f"  Barber {barber_id}: processing chunk {chunk_task[3]}")
+                    print(
+                        f"  Barber {barber_id}: customer chunk {chunk_task[3]}, "
+                        f"getting forks..."
+                    )
+
+                self._acquire_forks(barber_id, self.num_barbers, forks)
+
+                if self.show_progress:
+                    print(
+                        f"  Barber {barber_id}: eating (hashing chunk {chunk_task[3]})..."
+                    )
 
                 result = process_chunk(chunk_task)
 
                 with results_lock:
                     results.append(result)
+
+                self._release_forks(barber_id, self.num_barbers, forks)
 
                 if self.show_progress:
                     print(
@@ -104,10 +149,11 @@ class SleepingBarberFileProcessor(ParallelFileProcessor):
                 waiting_room.task_done()
 
         if self.show_progress:
-            print("\n--- Sleeping Barber File Service ---")
-            print(f"Barbers (threads): {self.num_barbers}")
-            print(f"Waiting chairs:    {self.num_chairs}")
-            print(f"Chunks to process: {total_chunks}\n")
+            print("\n--- Sleeping Barber + Dining Philosophers ---")
+            print(f"Barbers (philosophers): {self.num_barbers}")
+            print(f"Forks:                  {self.num_barbers}")
+            print(f"Waiting chairs:         {self.num_chairs}")
+            print(f"Chunks to process:      {total_chunks}\n")
 
         barber_threads = [
             threading.Thread(
@@ -122,7 +168,6 @@ class SleepingBarberFileProcessor(ParallelFileProcessor):
         for thread in barber_threads:
             thread.start()
 
-        # Main thread sends chunks into the shop like arriving customers
         for chunk_task in tasks:
             placed = False
             while not placed:
@@ -146,7 +191,6 @@ class SleepingBarberFileProcessor(ParallelFileProcessor):
         waiting_room.join()
         stop_event.set()
 
-        # Wake any sleeping barbers so they can exit
         for _ in range(self.num_barbers):
             customers_waiting.release()
             try:

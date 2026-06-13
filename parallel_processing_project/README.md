@@ -12,6 +12,7 @@ This Python project demonstrates **high-performance parallel file processing, in
 ## Quick Links
 
 - **Project Idea:** [PROJECT_IDEA.md](PROJECT_IDEA.md)
+- **Technical Guide (how we implemented each requirement):** [TECHNICAL_GUIDE.md](TECHNICAL_GUIDE.md)
 - **Get Started:** [INSTRUCTIONS.md](INSTRUCTIONS.md)
 - **Technical Specs:** [REQUIREMENTS.md](REQUIREMENTS.md)
 - **Interactive Client:** `python client.py`
